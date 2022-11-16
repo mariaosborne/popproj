@@ -1,0 +1,10 @@
+inst/doc
+/norway_popsize.txt
+/NORasfrRR.txt
+/norway_flt_allyears.txt
+/norway_flt.txt
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store

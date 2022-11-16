@@ -1,0 +1,31 @@
+Package: popproj
+Type: Package
+Title: Tools for Population Projection
+Version: 0.1.0
+Authors@R: 
+    c(person(given = "Joshua R.",
+              family = "Goldstein",
+              role = "aut"),
+    person(given = "Maria",
+            family = "Osborne",
+            role = c("ctb", "cre"),
+            email = "mariaosborne@berkeley.edu"))
+Maintainer: Maria Osborne <mariaosborne@berkeley.edu>
+Imports: 
+    cowplot,
+    data.table,
+    dplyr,
+    ggplot2,
+    stringr,
+    HMDHFDplus,
+    patchwork
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
