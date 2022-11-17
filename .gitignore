@@ -3,6 +3,9 @@ inst/doc
 /NORasfrRR.txt
 /norway_flt_allyears.txt
 /norway_flt.txt
+/japan_asfr.txt
+/japan_flt.txt
+/japan_popsize_both.txt
 .Rproj.user
 .Rhistory
 .Rdata

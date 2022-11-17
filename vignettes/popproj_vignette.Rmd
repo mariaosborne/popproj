@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 ## Summary
 
-`popproj` is a package for conducting population projection.
+`popproj` is a package for conducting dynamic population projection.
 
 
 ## Set-up
@@ -34,32 +34,29 @@ library(tidyr)
 
 ## Obtaining Vital Rates
 
-As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or
-`project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
+As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or `project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
 
-note: get_asfr_HFD is currently not working due to updates in the HFD website
+note: recent changes to the HMD and HFD website have broken these methods.
 ```{r}
 # Fertility
-#my_Fx <- get_asfr_HFD(country_code = 'NOR', year = 1980, hfd_username = "--",
-#             hfd_password = ""--")
+#my_Fx <- get_asfr_HFD(country_code = 'NOR', year = 1980, hfd_username = "mariaosborne",
+#             hfd_password = "")
 
 # Mortality
-#my_Lx <- get_pyl_HMD(country_code = 'NOR', year = 1980, hmd_username = "--",
-#             hmd_password = "--") 
+#my_Lx <- get_pyl_HMD(country_code = 'NOR', year = 1980, hmd_username = "mariaosborne",
+#             hmd_password = "") 
 ```
 
-
-in order to not put my HMD/HFD passwords online, I will read in some pre-downloaded data
+To demonstrate, I will use some downloaded data.
 ```{r}
 # ASFRs
-my_Fx <- fread("/hdir/0/mariaosborne/censoc/popproj/NORasfrRR.txt")[Year == 1980]$ASFR
+my_Fx <- fread("~mariaosborne/censoc/popproj/NORasfrRR.txt")[Year == 1980]$ASFR
 # pad the ASFR vector so that it will be the same length as the Lx vector
 my_Fx <- pad_fx_vector(my_Fx)
 my_Fx
 
 # Lx values
-my_Lx <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_flt.txt")$Lx
-# normalize to radix of 1
+my_Lx <- fread("~mariaosborne/censoc/popproj/norway_flt.txt")$Lx
 my_Lx <- (my_Lx)/100000
 my_Lx
 ```
@@ -90,19 +87,19 @@ The length of `e0.vec` must be `nsteps`.
 normalized to a radix of 1
 
 
-As an example, we will perform a projection using data from Norway. In this scenario, we project for 100 years; NRR begins at 2 and falls to 1 at year 21 of the projection.
+As an example, we will perform a projection using data from Norway. In this scenario, we project for 120 years; NRR begins at 2 and falls to 1 at year 21 of the projection.
 ```{r}
 # Example basic projection
 # we can either specify the number of steps 
 my_projection <- project_leslie1(nsteps=120,
-                nrr.vec = c(rep(2,20), rep(0.9,100)),
+                nrr.vec = c(rep(2,20), rep(1,100)),
                 e0.vec = rep(80,120),
                 Lx.zero = my_Lx,
                 Fx.zero = my_Fx)
  
 # ... or a time vector. must be in one year increments
 my_projection_t <- project_leslie1(time = c(-20:99),
-                nrr.vec = c(rep(2,20), rep(0.9,100)),
+                nrr.vec = c(rep(2,20), rep(1,100)),
                 e0.vec = rep(80,120),
                 Lx.zero = my_Lx,
                 Fx.zero = my_Fx)
@@ -124,10 +121,10 @@ age group and each column is a step in the projection.
 Any returned elements can be plotted with base R. We will do more advanced/pretty plotting later
 ```{r}
 # plot population size over time
-plot(colSums(my_projection$K_mat))  
+plot(my_projection$time_vec, colSums(my_projection$K_mat))
 
 # plot number of births
-plot(my_projection$births_vec)
+plot(my_projection$time_vec, my_projection$births_vec)
 
 #plot_projection(my_projection_t, plot_predicted_peaks = T)
 # non differentiable points?
@@ -137,6 +134,8 @@ plot(my_projection$births_vec)
 #center_diff(my_projection_t$births_vec) 
 ```
 
+
+## Dynamic Projections
 
 Alternatively, one can allow specify vital rates L(x) and F(x) at each step of the projection by using the 
 `project_lesli1_dynamic()` method, which take the following arguments:
@@ -150,18 +149,20 @@ Alternatively, one can allow specify vital rates L(x) and F(x) at each step of t
 - `starting.pop`: an optional vector of initial population by 1-year age groups. If left unspecified, projection will start from the stable age structure of the leslie matrix from `Lx.zero` and `Fx.zero`
 
 
-As an example, we will project using real fertility and mortality rates from Norway,
-And starting population is Norway in 1970. This will be similar to how the population
-of Norway would have changed if net migration had dropped to zero after 1970.
+### Example with Norwegian data
 
-(NOTE: need to check the number of steps/dimensions at some points -- 
-not sure if starting at 0 or 1)
+As an example, we will project the Norwegian population 1970-2018 using real fertility/mortality rates & the actual population
+of Norway in 1970. This should show us what would happened if the net migration rate in Norway dropped to zero after 1970.
 
-First, we will transform into a useful structure. Fx and Lx matrices can be built from
+(NOTE: not sure if things are starting at year 0 of year 1 here)
+
+First, we will transform the data into a useful structure. Fx and Lx matrices can be built from
 scratch, or can be gleaned from real HFD & HMD data using the `lifetable_to_matrix()` function.
 ```{r}
-# Matrix of Lx values
+# Lx from lifetables
 female_lifetable <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_flt_allyears.txt")
+
+# ASFR data
 fertility_rates <- fread("/hdir/0/mariaosborne/censoc/popproj/NORasfrRR.txt")
 
 # convert to matrix
@@ -172,25 +173,34 @@ Fx_matrix <- lifetable_to_matrix(data = fertility_rates, years = 1970:2018, rate
 ```
 
 
-And perform the projection
+Now that the data are in matrices, let's get the starting population and project
 ```{r}
 # Get starting population
 population_by_year <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_popsize.txt")
 starting_pop <- population_by_year[Year == 1970, Female]
 
-# an example here
-my_dynamic_projection <- project_leslie1_dynamic(nsteps=49,
+# dynamic projection
+norway_dynamic <- project_leslie1_dynamic(nsteps=49,
                  Lx_mat = Lx_matrix,
                  Fx_mat = Fx_matrix,
                  starting.pop = starting_pop)
 
 # look at population over time
-plot(colSums(my_dynamic_projection$K.mat))
+plot(colSums(norway_dynamic$K.mat))
 
 # investigate other elements
-my_dynamic_projection$nrr.vec
-my_dynamic_projection$births.vec
-my_dynamic_projection$e0.vec
+norway_dynamic$nrr.vec
+norway_dynamic$births.vec
+norway_dynamic$e0.vec
+
+# compare the projected population to real population growth
+time_vec <- 1970:2018
+real_population <- population_by_year[Year %in% 1970:2018, .(fpop = sum(Female)), by = Year]
+million <- 1000000
+plot(time_vec, colSums(norway_dynamic$K.mat), ylim = c(1.9*million, 2.65*million),
+     ylab = "female population", xlab = "year")
+lines(time_vec, real_population$fpop)
+
 
 # notes to self
 # how does this nrr stack up against real data?
@@ -199,6 +209,16 @@ my_dynamic_projection$e0.vec
 # ^ dunno what this comment means anymore?
 # I should try the plot_projection method on this one too, see if any issues
 # no peaks
+```
+
+The actual female population of Norway in 2018 is 2.63 million. If Norway had become a closed population in 
+1970, the projection estimates a female population of about 2.20 million.
+
+
+### Example with Japanese data
+Net migration in Japan is extremely low, so using the dynamic projection should predict very similar numbers as the real population. Let's make sure things are working ok by checking that...
+```{r}
+
 ```
 
 

@@ -14,7 +14,7 @@
 #' @param Fx.zero vector of initial Fx values
 #' @param starting.pop optional vector of initial population by 1-year age groups. If left unspecified,
 #' projection will start from the stable age structure of the initial Leslie matrix
-#' @param normalize whether to normalize the population or something IDK this isn't implemented yet
+#' @param normalize whether to normalize the initial populaition to 1 (not yet implemented)
 #'
 #' @return A Matrix
 #'
