@@ -1,5 +1,15 @@
-
-# Pads ASFR vector so that it is the same length as Lx vector
+#' Pad Fx
+#'
+#' ASFRs from HMD are measured at age 12-55. This method
+#' Pads a vector of ASFRs with zeros for ages 0-11 and 55-110,
+#' so that it contains the same age groups as a lifetable from HMD
+#'
+#' @param fx a vector of ASFRs for ages 12-55
+#'
+#' @returns a vector length 111
+#'
+#' @export
+#'
 
 pad_fx_vector <- function(fx) {
   # age grps 12 - 55

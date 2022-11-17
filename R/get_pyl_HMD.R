@@ -13,6 +13,8 @@
 #'
 #' @return a vector of Lx values of length 111 (ages 0-110)
 #'
+#' @export
+#'
 
 .datatable.aware=TRUE
 

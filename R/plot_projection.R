@@ -5,7 +5,7 @@
 #' time in a multi-panel plot
 #'
 #' @param projection_object output from a projection method
-#' @param include XXXXXX
+#' @param include which plots to include, not yet implemented
 #' @param plot_predicted_peaks calculate and mark the times of peak
 #' population and peak births
 #' @param plot_generational_slopes plot line segments showing average change in
@@ -15,7 +15,6 @@
 #' between (generation_t - generation_length, generation_t)
 #' @param plot_replacement_nrr mark replacement fertility (NRR=1) on the NRR plot
 #'
-#' @import ggplot2, patchwork
 #'
 #' @export
 

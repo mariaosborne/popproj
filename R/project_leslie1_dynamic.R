@@ -24,7 +24,7 @@
 
 ## projection with matrix of time-varying Lxt and Fxt matrices
 
-project_leslie1_matform <- function(nsteps,
+project_leslie1_dynamic <- function(nsteps,
                                     Lx_mat,
                                     Fx_mat,
                                     starting.pop = NULL) {

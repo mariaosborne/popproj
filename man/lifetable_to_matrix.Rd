@@ -20,6 +20,6 @@ Returns a list with the following components
 }
 \description{
 Takes HMD/HFD structured data and turns it into a matrix
-for use in project_leslie1_matform(). Data need to have
+for use in project_leslie1_dynamic(). Data need to have
 Year, Age, and either and Lx or ASFR column.
 }

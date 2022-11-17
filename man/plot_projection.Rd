@@ -17,7 +17,7 @@ plot_projection(
 \arguments{
 \item{projection_object}{output from a projection method}
 
-\item{include}{XXXXXX}
+\item{include}{which plots to include, not yet implemented}
 
 \item{plot_predicted_peaks}{calculate and mark the times of peak
 population and peak births}

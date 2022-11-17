@@ -11,6 +11,8 @@
 #'
 #' @return a vector of Fx values of length 111 (ages 0-110)
 #'
+#' @export
+#'
 
 .datatable.aware=TRUE
 

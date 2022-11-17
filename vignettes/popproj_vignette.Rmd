@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 ## Summary
 
-`popproj` is a package for conducting population projection 
+`popproj` is a package for conducting population projection.
 
 
 ## Set-up
@@ -35,7 +35,7 @@ library(tidyr)
 ## Obtaining Vital Rates
 
 As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or
-`project_leslie1_matform()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
+`project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
 
 note: get_asfr_HFD is currently not working due to updates in the HFD website
 ```{r}
@@ -139,7 +139,7 @@ plot(my_projection$births_vec)
 
 
 Alternatively, one can allow specify vital rates L(x) and F(x) at each step of the projection by using the 
-`project_lesli1_matform()` method, which take the following arguments:
+`project_lesli1_dynamic()` method, which take the following arguments:
 
 - `nsteps`: the number of steps in the projection
 
@@ -179,7 +179,7 @@ population_by_year <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_popsize.
 starting_pop <- population_by_year[Year == 1970, Female]
 
 # an example here
-my_dynamic_projection <- project_leslie1_matform(nsteps=49,
+my_dynamic_projection <- project_leslie1_dynamic(nsteps=49,
                  Lx_mat = Lx_matrix,
                  Fx_mat = Fx_matrix,
                  starting.pop = starting_pop)

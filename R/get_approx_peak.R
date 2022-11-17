@@ -1,3 +1,7 @@
+#' Get approximate peak
+#'
+#'
+#' @export
 
 get_approx_peak <- function(t, ft)
 {
