@@ -283,20 +283,15 @@ So every projection is done for times -50:50, where NRR hits 1 at year 0
 coale <- coale_projection(Lx_zero = Lx_matrix[,1],
                           Fx_zero = Fx_matrix[,1],
                           k1 = -0.015,
-                          k2 = 0.00015,
                           rho = 0,
                           e0_start = 80)
 
-plot(colSums(coale$K_mat))
-plot(coale$births_vec)
-plot(coale$e0_vec)
-plot(coale$time_vec, coale$nrr_vec)
-
+#plot(colSums(coale$K_mat))
+#plot(coale$births_vec)
+#plot(coale$e0_vec)
+#plot(coale$time_vec, coale$nrr_vec)
 
 # notes
-# need to fix variable names!! e0_vec vs. e0_vec
-#time goes from negative to positive
-#(plot year zero)
 # scaling arg?
 ```
 
@@ -312,23 +307,10 @@ their maximum
 Default generation length is 30 years. 
 
 
-
 ```{r}
 plot_projection(coale, plot_predicted_peaks = T, 
-                plot_generational_slopes = T, generation_t = 50) ### WHAT
-```
-
-
-
-
-testing
-```{r}
-test_proj_time <- project_leslie1(time = 2000:2005, nrr_vec = c(1,1,1,2,2,2), 
-                             e0_vec = rep(80,6), Lx_zero = my_Lx, Fx_zero = my_Fx)
-
-test_proj_time
-
-plot(test_proj$time_vec, test_proj$nrr_vec)
+                plot_generational_slopes = T, 
+                generation_t = 0) ### WHAT
 ```
 
 

@@ -45,7 +45,7 @@ plot_projection <-  function(projection_object,
     tN.exact <- get_approx_peak(t=t, ft=pop_vec)
     tB.int <- t[which.max(projection_object$births_vec)]
     tB.exact <- get_approx_peak(t=t, ft=projection_object$births_vec)
-    print(tB.exact)
+    #print(tB.exact)
   }
 
   # build basic plots
@@ -99,24 +99,25 @@ plot_projection <-  function(projection_object,
     start_time <- generation_t - generation_length
     end_time <- generation_t
     population_plot <- population_plot +
-      ggplot2::geom_segment(aes(x=start_time, y = pop_vec[start_time],
-                       xend = end_time,yend = pop_vec[end_time])) +
-      ggplot2::annotate("text", label = paste0('t-', generation_length), x=start_time, y = pop_vec[start_time],
+      ggplot2::geom_segment(aes(x=start_time, y = proj[proj$time == start_time, ]$Nt,
+                       xend = end_time,yend = proj[proj$time == end_time, ]$Nt)) +
+      ggplot2::annotate("text", label = paste0('t-', generation_length),
+                        x=start_time, y = proj[proj$time == start_time, ]$Nt,
                vjust = 1.5) +
-      ggplot2::annotate("text", label = 't', x=end_time, y = pop_vec[end_time],
+      ggplot2::annotate("text", label = 't', x=end_time, y = proj[proj$time == end_time, ]$Nt,
                vjust = 1.5) +
-      ggplot2::geom_point(aes(x=start_time, y = pop_vec[start_time])) +
-      ggplot2::geom_point(aes(x=end_time, y = pop_vec[end_time]))
+      ggplot2::geom_point(aes(x=start_time, y = proj[proj$time == start_time, ]$Nt)) +
+      ggplot2::geom_point(aes(x=end_time, y = proj[proj$time == end_time, ]$Nt))
 
     births_plot <- births_plot +
-      ggplot2::geom_segment(aes(x=start_time, y = projection_object$births_vec[start_time],
-                       xend = end_time,yend = projection_object$births_vec[end_time])) +
+      ggplot2::geom_segment(aes(x=start_time, y = proj[proj$time == start_time, ]$Bt,
+                       xend = end_time,yend = proj[proj$time == end_time, ]$Bt)) +
       ggplot2::annotate("text", label = paste0('t-', generation_length), x=start_time,
-               y = projection_object$births_vec[start_time], vjust = 1.5) +
-      ggplot2::annotate("text", label = 't', x=end_time, y = projection_object$births_vec[end_time],
+               y = proj[proj$time == start_time, ]$Bt, vjust = 1.5) +
+      ggplot2::annotate("text", label = 't', x=end_time, y = proj[proj$time == end_time, ]$Bt,
                vjust = 1.5) +
-      ggplot2::geom_point(aes(x=start_time, y = projection_object$births_vec[start_time])) +
-      ggplot2::geom_point(aes(x=end_time, y = projection_object$births_vec[end_time]))
+      ggplot2::geom_point(aes(x=start_time, y = proj[proj$time == start_time, ]$Bt)) +
+      ggplot2::geom_point(aes(x=end_time, y = proj[proj$time == end_time, ]$Bt))
   }
 
   if(plot_replacement_nrr) {
