@@ -25,16 +25,18 @@ coale_projection <- function(Lx_zero, Fx_zero,
   t <- c(-50:50)
 
   # set input values
-  nrr.t <- exp(k1 * t  + k2 * t^2) # how is the intial nrr set here???
-  e0.vec <- exp(rho*t) * 80
+  nrr_t <- exp(k1 * t  + k2 * t^2) # how is the intial nrr set here???
+  e0_vec <- exp(rho*t) * 80
 
   # do projection
-  proj <- project_leslie1(nsteps = length(t),
-                               nrr.vec = nrr.t,
-                               e0.vec = e0.vec,
-                               Lx.zero = Lx_zero,
-                               Fx.zero = Fx_zero)
+  proj <- project_leslie1(time = -50:50,
+                               nrr_vec = nrr_t,
+                               e0_vec = e0_vec,
+                               Lx_zero = Lx_zero,
+                               Fx_zero = Fx_zero)
   return(proj)
+
+  ####
   K.mat.out <- proj$K_mat
 
   # I don't think anything beyond this is strictly necessary

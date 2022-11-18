@@ -28,6 +28,7 @@ library(popproj)
 library(data.table)
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 ```
 
 
@@ -36,7 +37,7 @@ library(tidyr)
 
 As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or `project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
 
-note: recent changes to the HMD and HFD website have broken these methods.
+note: recent changes to the HMD and HFD website have made these methods non-functional.
 ```{r}
 # Fertility
 #my_Fx <- get_asfr_HFD(country_code = 'NOR', year = 1980, hfd_username = "mariaosborne",
@@ -47,7 +48,8 @@ note: recent changes to the HMD and HFD website have broken these methods.
 #             hmd_password = "") 
 ```
 
-To demonstrate, I will use some downloaded data.
+To demonstrate, I will use some downloaded data, and use the `pad_fx_vector` method to format the fertility data 
+correctly.
 ```{r}
 # ASFRs
 my_Fx <- fread("~mariaosborne/censoc/popproj/NORasfrRR.txt")[Year == 1980]$ASFR
@@ -71,19 +73,21 @@ to set up a projection in this package. The first is `project_leslie1()`. This p
 set of initial fertility and mortality rates, where life expectancy and NRR are allowed to vary over the
 course of the projection.
 
-- `nsteps`: the number of steps to project for
+- `nsteps`: the number of years to include in the projection
 
-- `nrr.vec`: vector of numbers specifying the net reproductive rate at each step in the 
-projection. The length of `nrr.vec` must be `nsteps`.
+- `time`: can be used in place of nsteps. A vector of of years to project for, e.g. 0:10 or -50:50, or 1960:2000.
 
-- `e0.vec`: vector of numbers specifying life expectancy at each step in the projection. 
-The length of `e0.vec` must be `nsteps`.
+- `nrr_vec`: vector of numbers specifying the net reproductive rate at each step in the 
+projection. The length of `nrr_vec` must be `nsteps` or length(time)
 
-- `Lx.zero`: vector of initial L(x) values. 
+- `e0_vec`: vector of numbers specifying life expectancy at each step in the projection. 
+The length of `e0_vec` must be `nsteps` or length(time)
 
-- `Fx.zero`: vector of initial F(x) values. Must be the same length at `Lx.zero`
+- `Lx_zero`: vector of initial L(x) values. One-year age groups
 
-- `starting.pop`: an optional vector of initial population by 1-year age groups. If left unspecified, projection will start from the stable age structure of the leslie matrix from `Lx.zero` and `Fx.zero`
+- `Fx_zero`: vector of initial F(x) values. Must be the same length at `Lx_zero` and have same age groups
+
+- `starting_pop`: an optional vector of initial population by 1-year age groups. If left unspecified, projection will start from the stable age structure of the leslie matrix from `Lx_zero` and `Fx_zero`
 normalized to a radix of 1
 
 
@@ -92,24 +96,26 @@ As an example, we will perform a projection using data from Norway. In this scen
 # Example basic projection
 # we can either specify the number of steps 
 my_projection <- project_leslie1(nsteps=120,
-                nrr.vec = c(rep(2,20), rep(1,100)),
-                e0.vec = rep(80,120),
-                Lx.zero = my_Lx,
-                Fx.zero = my_Fx)
+                nrr_vec = c(rep(2,20), rep(1,100)),
+                e0_vec = rep(80,120),
+                Lx_zero = my_Lx,
+                Fx_zero = my_Fx)
  
-# ... or a time vector. must be in one year increments
+# The projection can also be specified with a vector of years
+# for example -10:10 or 1950:2000
 my_projection_t <- project_leslie1(time = c(-20:99),
-                nrr.vec = c(rep(2,20), rep(1,100)),
-                e0.vec = rep(80,120),
-                Lx.zero = my_Lx,
-                Fx.zero = my_Fx)
+                nrr_vec = c(rep(2,20), rep(1,100)),
+                e0_vec = rep(80,120),
+                Lx_zero = my_Lx,
+                Fx_zero = my_Fx)
 my_projection
 ```
 
 The `project_leslie1` method returns a list, consisting of
 
 -   `K_mat` : A matrix containing the result of the projection, where each row is an 
-age group and each column is a step in the projection.
+age group and each column is a step in the projection. The column sums are the population
+at each year
 
 -   `births_vec` : A vector of births over time
 
@@ -117,8 +123,11 @@ age group and each column is a step in the projection.
 
 -   `e0_vec`: A vectors of e(0) values over time
 
+-   `time_vec` A vector of years. If no time vector was provided, returns 0:(nsteps - 1)
 
-Any returned elements can be plotted with base R. We will do more advanced/pretty plotting later
+
+
+Any returned elements of the list can be plotted with base R.
 ```{r}
 # plot population size over time
 plot(my_projection$time_vec, colSums(my_projection$K_mat))
@@ -126,13 +135,18 @@ plot(my_projection$time_vec, colSums(my_projection$K_mat))
 # plot number of births
 plot(my_projection$time_vec, my_projection$births_vec)
 
-#plot_projection(my_projection_t, plot_predicted_peaks = T)
-# non differentiable points?
-#get_approx_peak(t=my_projection$time_vec, ft=my_projection$births_vec)
-  #dft <- center_diff(ft)
-  #peak <- approx(x = dft, y = t, xout = 0)$y
-#center_diff(my_projection_t$births_vec) 
 ```
+
+### prettier plotting
+Built in plotting with the `plot_projection` method. Limits customization but easily enhances aesthetics.
+
+Plots NRR, life expectancy, (female) population, and births over the course of the projection
+
+```{r}
+plot_projection(my_projection)
+```
+
+
 
 
 ## Dynamic Projections
@@ -142,11 +156,11 @@ Alternatively, one can allow specify vital rates L(x) and F(x) at each step of t
 
 - `nsteps`: the number of steps in the projection
 
-- `Lx.mat`: matrix of L(x) values for each step of the projection. Must have same number of columns as number of steps in the projection
+- `Lx_mat`: matrix of L(x) values for each step of the projection. Must have same number of columns as number of steps in the projection
 
-- `Fx.mat`: matrix of F(x) values for each step of the projection. Must have same number of columns as number of steps in the projection and be the same dimensions as `Lx.mat`
+- `Fx_mat`: matrix of F(x) values for each step of the projection. Must have same number of columns as number of steps in the projection and be the same dimensions as `Lx.mat`
 
-- `starting.pop`: an optional vector of initial population by 1-year age groups. If left unspecified, projection will start from the stable age structure of the leslie matrix from `Lx.zero` and `Fx.zero`
+- `starting_pop`: an optional vector of initial population by 1-year age groups. If left unspecified, projection will start from the stable age structure of the leslie matrix from `Lx_zero` and `Fx_zero`
 
 
 ### Example with Norwegian data
@@ -183,21 +197,21 @@ starting_pop <- population_by_year[Year == 1970, Female]
 norway_dynamic <- project_leslie1_dynamic(nsteps=49,
                  Lx_mat = Lx_matrix,
                  Fx_mat = Fx_matrix,
-                 starting.pop = starting_pop)
+                 starting_pop = starting_pop)
 
 # look at population over time
-plot(colSums(norway_dynamic$K.mat))
+plot(colSums(norway_dynamic$K_mat))
 
 # investigate other elements
-norway_dynamic$nrr.vec
-norway_dynamic$births.vec
-norway_dynamic$e0.vec
+norway_dynamic$nrr_vec
+norway_dynamic$births_vec
+norway_dynamic$e0_vec
 
 # compare the projected population to real population growth
 time_vec <- 1970:2018
 real_population <- population_by_year[Year %in% 1970:2018, .(fpop = sum(Female)), by = Year]
 million <- 1000000
-plot(time_vec, colSums(norway_dynamic$K.mat), ylim = c(1.9*million, 2.65*million),
+plot(time_vec, colSums(norway_dynamic$K_mat), ylim = c(1.9*million, 2.65*million),
      ylab = "female population", xlab = "year")
 lines(time_vec, real_population$fpop)
 
@@ -216,73 +230,106 @@ The actual female population of Norway in 2018 is 2.63 million. If Norway had be
 
 
 ### Example with Japanese data
-Net migration in Japan is extremely low, so using the dynamic projection should predict very similar numbers as the real population. Let's make sure things are working ok by checking that...
+Net migration in Japan is very low, so using the dynamic projection should predict very similar numbers as the real population. Let's make sure things are working ok by checking that...
 ```{r}
+# Lx 
+japan_female_lifetable <- fread("~mariaosborne/censoc/popproj/japan_flt.txt") 
+# Fx
+japan_Fx <- fread("~mariaosborne/censoc/popproj/japan_asfr.txt") 
 
+# convert to matrices
+japan_Lx_mat <- lifetable_to_matrix(data = japan_female_lifetable, years = 1960:2010, rate = 'Lx')
+japan_Fx_mat <- lifetable_to_matrix(data = japan_Fx, years = 1960:2010, rate = 'ASFR')
+
+# population
+japan_Nx <- fread("~mariaosborne/censoc/popproj/japan_popsize_both.txt")
+japan_initial_pop <- japan_Nx[Year == 1960,]$Female
+japan_real_population <- japan_Nx[Year %in% 1960:2010, .(fpop = sum(Female)), by = Year]
+
+
+# project
+japan_dynamic <- project_leslie1_dynamic(time = 1960:2010,
+                 Lx_mat = japan_Lx_mat,
+                 Fx_mat = japan_Fx_mat,
+                 starting_pop = japan_initial_pop)
 ```
 
 
-## Coale(?) simulation
-Specific scenario of exponentially declining fertility with constant mortality
-meant to replicate the shiny app
+Let see how the projection (points) stacks up against the actual female population (lines)
+```{r}
+plot(japan_dynamic$time_vec, colSums(japan_dynamic$K_mat))
+lines(japan_real_population)
+```
+The projection tracks very closely.
+projected 2010 female pop: 64,524,828
+real 2020 female pop: 64,748,265
+
+lastly, let's look at all plots for the Japan projection:
+```{r}
+plot_projection(japan_dynamic)
+```
+
+
+
+
+## Coale scenario simulation
+Projecting exponentially declining fertility with constant mortality
+
+`coale_projection()` method is meant to replicate the peak projection shiny app.
+So every projection is done for times -50:50, where NRR hits 1 at year 0
 ```{r}
 # default of NRR declining by 1.5% per year, e0 of 80
-coale <- coale_projection(Lx_zero = Lx_matrix[,1], Fx_zero = Fx_matrix[,1], k2 = 0.00015)
+# we will use initial Lx and Fx values from the Norweigian data
+coale <- coale_projection(Lx_zero = Lx_matrix[,1],
+                          Fx_zero = Fx_matrix[,1],
+                          k1 = -0.015,
+                          k2 = 0.00015,
+                          rho = 0,
+                          e0_start = 80)
 
 plot(colSums(coale$K_mat))
 plot(coale$births_vec)
 plot(coale$e0_vec)
-plot(coale$nrr_vec)
+plot(coale$time_vec, coale$nrr_vec)
 
-#coale$nrr_vec
-#coale$births_vec
-#coale$e0_vec
 
 # notes
-# need to fix variable names!! e0_vec vs. e0.vec
+# need to fix variable names!! e0_vec vs. e0_vec
 #time goes from negative to positive
 #(plot year zero)
-#we should all a boolean argument for scaling into this method.
+# scaling arg?
 ```
 
 
-## Plotting Results
-Each project method returns a list, the plot_projection() method plots all four
-elements in a visually appealing way with additional options
+## Predicted Peaks
 
+We can use the `plot_projection()` method again with additional options: 
 
-### Basic Plots
-
-By default, this method plots population size, births, NRR, and e0.
-
-```{r}
-plot_projection(coale)
-```
-
-
-### Additional Options
-`plot_projection()` has additional options for:
-
-1. NRR replacement: If there is a point where NRR reaches 1, mark it on the NRR graph with a vertical
-line (not implemented yet; this is always plotted)
-
-2. Generational Slopes: I think manually set either a starting or ending point
-have the defauly generational length be 30, but alterable
-throw and exception 
-
-3. Predicted Peak Values: Plot vertical lines where births and population are predicted to reach
+1. Predicted Peak Values: Plot vertical lines where births and population are predicted to reach
 their maximum
+
+2. Generational Slopes: Draw a chord between two generations on the birth and population plots.
+Default generation length is 30 years. 
+
+
 
 ```{r}
 plot_projection(coale, plot_predicted_peaks = T, 
-                plot_generational_slopes = T, generation_t = 100)
+                plot_generational_slopes = T, generation_t = 50) ### WHAT
 ```
 
 
 
 
+testing
+```{r}
+test_proj_time <- project_leslie1(time = 2000:2005, nrr_vec = c(1,1,1,2,2,2), 
+                             e0_vec = rep(80,6), Lx_zero = my_Lx, Fx_zero = my_Fx)
 
+test_proj_time
 
+plot(test_proj$time_vec, test_proj$nrr_vec)
+```
 
 
 

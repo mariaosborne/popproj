@@ -4,7 +4,13 @@
 \alias{project_leslie1_dynamic}
 \title{Matrix Form of projection}
 \usage{
-project_leslie1_dynamic(nsteps, Lx_mat, Fx_mat, starting.pop = NULL)
+project_leslie1_dynamic(
+  nsteps,
+  Lx_mat,
+  Fx_mat,
+  starting_pop = NULL,
+  time = NULL
+)
 }
 \arguments{
 \item{nsteps}{number of 1-year steps in the population projection}
@@ -15,7 +21,7 @@ of columns as number of steps in the projection}
 \item{Fx_mat}{matrix of Fx values for each step of the projection. must have same number of
 columns as number of steps in the projection}
 
-\item{starting.pop}{optional vector of initial population by 1-year age groups. If left unspecified,
+\item{starting_pop}{optional vector of initial population by 1-year age groups. If left unspecified,
 projection will start from the stable age structure of the initial Leslie matrix}
 }
 \value{

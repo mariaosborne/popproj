@@ -7,7 +7,7 @@
 #' of columns as number of steps in the projection
 #' @param Fx_mat matrix of Fx values for each step of the projection. must have same number of
 #' columns as number of steps in the projection
-#' @param starting.pop optional vector of initial population by 1-year age groups. If left unspecified,
+#' @param starting_pop optional vector of initial population by 1-year age groups. If left unspecified,
 #' projection will start from the stable age structure of the initial Leslie matrix
 #'
 #' @return Returns a list with the following components
@@ -27,7 +27,8 @@
 project_leslie1_dynamic <- function(nsteps,
                                     Lx_mat,
                                     Fx_mat,
-                                    starting.pop = NULL) {
+                                    starting_pop = NULL,
+                                    time = NULL) {
 
   # check if input matrices are same size as each other
   if((nrow(Fx_mat) != nrow(Lx_mat)) | (ncol(Fx_mat) != ncol(Lx_mat))) {
@@ -35,6 +36,11 @@ project_leslie1_dynamic <- function(nsteps,
   }
 
   # check to make sure nsteps = ncol(Lx.mat) -- how is year zero treated???
+  if(!is.null(time)) {
+    nsteps = length(time)
+  } else{
+    time = c(0:(nsteps-1))
+  }
 
   Lx.start <- Lx_mat[,1]
   Fx.start <- Fx_mat[,1]
@@ -46,26 +52,26 @@ project_leslie1_dynamic <- function(nsteps,
   new.A[is.nan(new.A)] = 0
 
   ## define starting population Kx.0
-  if (is.null(starting.pop)) {
+  if (is.null(starting_pop)) {
     # use the stable pop of starting A if not specified
     Kx.zero <- eigen(new.A)$vec[,1]
     Kx.zero <- Kx.zero/sum(Kx.zero)
   }
   else {
     # make sure the starting pop vector is valid
-    print(length(starting.pop))
-    print(length(Lx.start))
-    if (length(starting.pop) != length(Lx.start)){stop("Invalid starting population vector")}
-    Kx.zero <- starting.pop
+    if (length(starting_pop) != length(Lx.start)){stop("Invalid starting population vector")}
+    Kx.zero <- starting_pop
   }
 
+  # build initial matrix
   K.mat <- matrix(0,
                   nrow = nrow(Fx_mat),
                   ncol = ncol(Fx_mat))
   K.mat[,1] <- Re(Kx.zero)
 
   # build NRR vec
-  nrr.vec <- c(sum(new.A[1,])) # first row of the Leslie matrix
+  # NRR = sum (nLx * nFx *ffab) if radix=1
+  nrr.vec <- c(sum(Lx_mat[,1]*Fx_mat[,1])*0.4886)
 
   ## do time varying projection
   for (i in 1:(nsteps-1))
@@ -78,23 +84,18 @@ project_leslie1_dynamic <- function(nsteps,
     new.A <- leslie1(Lx = new.Lx, Fx = new.Fx)
     new.A[is.nan(new.A)] = 0
 
-    new.nrr <- sum(new.A[1,])
+    new.nrr <- sum(Lx_mat[,i]*Fx_mat[,i])*0.4886
     nrr.vec <- c(nrr.vec, new.nrr)
 
     ## project
     K.mat[,i+1] <- new.A %*% K.mat[,i]
   }
 
-  ## note: we have to figure out NRR and e0 from this matrix
-  # I think NRR is the sum of the first row of the Leslie matrix?
-  # we can check this against real data
-
-  # how do we get life exp from either Lx or the leslie matrix?
-  # Add up Lx /radix -- everything is already divided out  here......
 
   #return(K.mat)
-  return(list(K.mat = K.mat,
-              nrr.vec = nrr.vec,
-              e0.vec = colSums(Lx_mat),
-              births.vec = K.mat[1,])) ## check this!!!
+  return(list(K_mat = K.mat,
+              nrr_vec = nrr.vec,
+              e0_vec = colSums(Lx_mat),
+              births_vec = K.mat[1,],
+              time_vec = time))
 }

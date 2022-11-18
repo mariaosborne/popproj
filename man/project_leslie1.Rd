@@ -6,11 +6,11 @@
 \usage{
 project_leslie1(
   nsteps,
-  nrr.vec,
-  e0.vec,
-  Lx.zero,
-  Fx.zero,
-  starting.pop = NULL,
+  nrr_vec,
+  e0_vec,
+  Lx_zero,
+  Fx_zero,
+  starting_pop = NULL,
   normalize = TRUE,
   time = NULL
 )
@@ -18,20 +18,20 @@ project_leslie1(
 \arguments{
 \item{nsteps}{number of steps (years) to project for}
 
-\item{nrr.vec}{vector of net reproductive rates at each step in the projection.
+\item{nrr_vec}{vector of net reproductive rates at each step in the projection.
 must be length(nsteps)}
 
-\item{e0.vec}{vector of life expectancies at each step in the projection. must
+\item{e0_vec}{vector of life expectancies at each step in the projection. must
 be length(nsteps)}
 
-\item{Lx.zero}{vector of initial Lx values}
+\item{Lx_zero}{vector of initial Lx values}
 
-\item{Fx.zero}{vector of initial Fx values}
+\item{Fx_zero}{vector of initial Fx values}
 
-\item{starting.pop}{optional vector of initial population by 1-year age groups. If left unspecified,
+\item{starting_pop}{optional vector of initial population by 1-year age groups. If left unspecified,
 projection will start from the stable age structure of the initial Leslie matrix}
 
-\item{normalize}{whether to normalize the population or something IDK this isn't implemented yet}
+\item{normalize}{whether to normalize the initial populaition to 1 (not yet implemented)}
 }
 \value{
 A Matrix
