@@ -39,7 +39,7 @@ coale_projection <- function(Lx_zero, Fx_zero,
   ####
   K.mat.out <- proj$K_mat
 
-  # I don't think anything beyond this is strictly necessary
+  # to be implemented, maybe
 
   ## normalize population size to 1.0 at time t = 0
   Nt.unnorm <- colSums(K.mat.out)

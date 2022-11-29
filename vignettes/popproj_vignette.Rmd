@@ -37,7 +37,7 @@ library(ggplot2)
 
 As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or `project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
 
-note: recent changes to the HMD and HFD website have made these methods non-functional.
+note: recent changes to the HMD and HFD website have made these methods non-functional. to fix.
 ```{r}
 # Fertility
 #my_Fx <- get_asfr_HFD(country_code = 'NOR', year = 1980, hfd_username = "mariaosborne",
@@ -48,8 +48,8 @@ note: recent changes to the HMD and HFD website have made these methods non-func
 #             hmd_password = "") 
 ```
 
-To demonstrate, I will use some downloaded data, and use the `pad_fx_vector` method to format the fertility data 
-correctly.
+To demonstrate, I will use some downloaded data.
+The `pad_fx_vector()` method to format the fertility data correctly, so that it has 111 age groups like the mortality data do.
 ```{r}
 # ASFRs
 my_Fx <- fread("~mariaosborne/censoc/popproj/NORasfrRR.txt")[Year == 1980]$ASFR
@@ -68,8 +68,8 @@ my_Lx
 
 ## Basic Projection
 
-All population projection is based on leslie matrices with one-year age intervals. There are two basic ways 
-to set up a projection in this package. The first is `project_leslie1()`. This projection is based on a 
+All population projection is based on leslie matrices with one-year age intervals. There are two methods 
+for specifying a projection in this package. The first is `project_leslie1()`. This projection is based on a 
 set of initial fertility and mortality rates, where life expectancy and NRR are allowed to vary over the
 course of the projection.
 
@@ -149,7 +149,7 @@ plot_projection(my_projection)
 
 
 
-## Dynamic Projections
+## Projections: Method 2
 
 Alternatively, one can allow specify vital rates L(x) and F(x) at each step of the projection by using the 
 `project_lesli1_dynamic()` method, which take the following arguments:
@@ -194,7 +194,7 @@ population_by_year <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_popsize.
 starting_pop <- population_by_year[Year == 1970, Female]
 
 # dynamic projection
-norway_dynamic <- project_leslie1_dynamic(nsteps=49,
+norway_dynamic <- project_leslie1_dynamic(time = 1970:2018,
                  Lx_mat = Lx_matrix,
                  Fx_mat = Fx_matrix,
                  starting_pop = starting_pop)
@@ -211,16 +211,13 @@ norway_dynamic$e0_vec
 time_vec <- 1970:2018
 real_population <- population_by_year[Year %in% 1970:2018, .(fpop = sum(Female)), by = Year]
 million <- 1000000
-plot(time_vec, colSums(norway_dynamic$K_mat), ylim = c(1.9*million, 2.65*million),
+plot(norway_dynamic$time_vec, colSums(norway_dynamic$K_mat), ylim = c(1.9*million, 2.65*million),
      ylab = "female population", xlab = "year")
-lines(time_vec, real_population$fpop)
+lines(norway_dynamic$time_vec, real_population$fpop)
 
 
 # notes to self
-# how does this nrr stack up against real data?
-# it looks pretty good (a little less than 1/2 of the TFR), but need to check
-# more thoroughly
-# ^ dunno what this comment means anymore?
+# nrr look reasonable?
 # I should try the plot_projection method on this one too, see if any issues
 # no peaks
 ```
@@ -279,12 +276,16 @@ Projecting exponentially declining fertility with constant mortality
 So every projection is done for times -50:50, where NRR hits 1 at year 0
 ```{r}
 # default of NRR declining by 1.5% per year, e0 of 80
-# we will use initial Lx and Fx values from the Norweigian data
+# we will use initial Lx and Fx values from the Norwegian data
 coale <- coale_projection(Lx_zero = Lx_matrix[,1],
                           Fx_zero = Fx_matrix[,1],
-                          k1 = -0.015,
-                          rho = 0,
-                          e0_start = 80)
+                          k1 = -0.015,   # rate of NRR decline
+                          k2 =  0.0001, # extra curvature (optional)
+                          e0_start = 80) # life expectancy at time 0
+
+plot_projection(coale)
+
+# rho parameter problematic
 
 #plot(colSums(coale$K_mat))
 #plot(coale$births_vec)
@@ -310,7 +311,9 @@ Default generation length is 30 years.
 ```{r}
 plot_projection(coale, plot_predicted_peaks = T, 
                 plot_generational_slopes = T, 
-                generation_t = 0) ### WHAT
+                generation_t = 0)
+
+# predicted peaks can be innacurate there are multiple local maxima
 ```
 
 
