@@ -29,5 +29,6 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-URL: https://github.com/mariaosborne/popproj
+URL: https://github.com/mariaosborne/popproj,
+    https://mariaosborne.github.io/popproj/
 BugReports: https://github.com/mariaosborne/popproj/issues
