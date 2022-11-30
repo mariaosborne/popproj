@@ -8,7 +8,7 @@ Authors@R:
               role = "aut"),
     person(given = "Maria",
             family = "Osborne",
-            role = c("ctb", "cre"),
+            role = c("aut", "cre"),
             email = "mariaosborne@berkeley.edu"))
 Maintainer: Maria Osborne <mariaosborne@berkeley.edu>
 Imports: 

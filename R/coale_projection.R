@@ -14,6 +14,8 @@
 #' @param k2 additional curvature of NRR change
 #' @param rho rate of e0 change
 #' @param e0_start initial e0 value
+#'
+#' @export
 
 
 

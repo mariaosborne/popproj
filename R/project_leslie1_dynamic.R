@@ -18,7 +18,7 @@
 #'   \item{\code{e0.vec}}{A vector Life expectancy at each stage of the projection}
 #'   \item{\code{births.vec}}{A vector The number of births at each stage}
 #'  }
-#'
+#'@export
 
 
 
