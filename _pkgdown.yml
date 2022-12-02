@@ -1,6 +1,4 @@
 url: https://mariaosborne.github.io/popproj/
 template:
   bootstrap: 5
-development:
-  mode: auto
 
