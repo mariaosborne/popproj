@@ -38,7 +38,7 @@ library(patchwork)
 
 As long as they are measured in one-year age intervals, vital rates may be sourced from anywhere or simulated. However, the package provides a shortcut for obtaining real rates from the Human Fertility Database and Human Mortality Database and formatting them for use in `project_leslie1()` or `project_leslie1_dynamic()`. Both `get_asfr_HFD()` and `get_pyl_HMD()` return a vector of length 111, corresponding to ages 0-110. One must be a registered user of the HFD and HMD with valid username and password to use these methods.
 
-note: recent changes to the HMD and HFD website have made these methods non-functional. to be fixed.
+note: recent changes to the HMD and HFD websites have made these methods non-functional. to be fixed.
 ```{r}
 # Fertility
 #my_Fx <- get_asfr_HFD(country_code = 'NOR', year = 1980, hfd_username = "mariaosborne",
@@ -49,17 +49,20 @@ note: recent changes to the HMD and HFD website have made these methods non-func
 #             hmd_password = "") 
 ```
 
-To demonstrate, I will use some downloaded data.
+
+To demonstrate, we will use some pre-loaded data. The package contains age-specific fertility, mortality, and population data from Norway and Japan.
+
+
 The `pad_fx_vector()` method will format the fertility data correctly, so that it has 111 age groups like the mortality data do.
 ```{r}
 # ASFRs
-my_Fx <- fread("~mariaosborne/censoc/popproj/NORasfrRR.txt")[Year == 1980]$ASFR
+my_Fx <- norway_asfr[Year == 1980]$ASFR
 # pad the ASFR vector so that it will be the same length as the Lx vector
 my_Fx <- pad_fx_vector(my_Fx)
 my_Fx
 
 # Lx values
-my_Lx <- fread("~mariaosborne/censoc/popproj/norway_flt.txt")$Lx
+my_Lx <- norway_female_lifetable[Year == 1980]$Lx
 my_Lx <- (my_Lx)/100000
 my_Lx
 ```
@@ -178,10 +181,10 @@ First, we will transform the data into a useful structure. Fx and Lx matrices ca
 scratch, or can be gleaned from real HFD & HMD data using the `lifetable_to_matrix()` function.
 ```{r}
 # Lx from lifetables
-female_lifetable <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_flt_allyears.txt")
+female_lifetable <- norway_female_lifetable
 
 # ASFR data
-fertility_rates <- fread("/hdir/0/mariaosborne/censoc/popproj/NORasfrRR.txt")
+fertility_rates <- norway_asfr
 
 # convert to matrix
 Lx_matrix <- lifetable_to_matrix(data = female_lifetable, years = 1970:2018, rate = 'Lx')
@@ -195,7 +198,7 @@ Fx_matrix
 Now that the data are in matrices, let's get the starting population and project
 ```{r}
 # Get starting population
-population_by_year <- fread("/hdir/0/mariaosborne/censoc/popproj/norway_popsize.txt")
+population_by_year <- norway_population_size
 starting_pop <- population_by_year[Year == 1970, Female]
 
 # dynamic projection
@@ -233,16 +236,16 @@ The actual female population of Norway in 2018 is 2.63 million. If Norway had be
 Net migration in Japan is very low, so using the dynamic projection should predict very similar numbers as the real population. Let's make sure things are working ok by checking that...
 ```{r}
 # Lx 
-japan_female_lifetable <- fread("~mariaosborne/censoc/popproj/japan_flt.txt") 
+japan_female_lifetable <- japan_female_lifetable 
 # Fx
-japan_Fx <- fread("~mariaosborne/censoc/popproj/japan_asfr.txt") 
+japan_Fx <- japan_asfr 
 
 # convert to matrices
 japan_Lx_mat <- lifetable_to_matrix(data = japan_female_lifetable, years = 1960:2010, rate = 'Lx')
 japan_Fx_mat <- lifetable_to_matrix(data = japan_Fx, years = 1960:2010, rate = 'ASFR')
 
 # population
-japan_Nx <- fread("~mariaosborne/censoc/popproj/japan_popsize_both.txt")
+japan_Nx <- japan_population_size
 japan_initial_pop <- japan_Nx[Year == 1960,]$Female
 japan_real_population <- japan_Nx[Year %in% 1960:2010, .(fpop = sum(Female)), by = Year]
 
