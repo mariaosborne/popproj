@@ -1,4 +1,4 @@
-#' Norway Female Lifetable
+#' Japan Female Lifetable
 #'
 #' From HMD July 2022.
 #'
@@ -12,4 +12,4 @@
 #' (data downloaded on July 28th, 2022).
 #'
 #'
-"norway_female_lifetable"
+"japan_female_lifetable"
