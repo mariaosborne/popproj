@@ -19,7 +19,7 @@ ezero2Lx <- function(e0, Lx.zero)
   }
   theta.hat <- stats::uniroot(f, lower = .00001, upper = 100)$root
   ## do only mort change over age 50, so neutral
-  Lx <- Lx.zero^c(rep(0, 50), rep(theta.hat, length(Lx.zero)-50))
+  Lx <- Lx.zero^c(rep(1, 50), rep(theta.hat, length(Lx.zero)-50))
   return(Lx)
 }
 
